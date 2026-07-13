@@ -5,12 +5,18 @@ struct RingBuffer {
     int writeIndex = 0;
     int readIndex = 0;
 
-    //TODO: when pushing it should take into consideration if they're overwriting an index.
-    void push(char input) {
-        if (writeIndex == 64) {
-            writeIndex = 0;
-        }//does not check if the index is already occupied.
-        array[writeIndex] = input;
+    void push(const char input) {
+        if (writeIndex == 64) writeIndex = 0;
+        std::cout << writeIndex << std::endl;
+
+        // First checks if the index being written on is already occupied.
+        if (array[writeIndex] != 0) {
+            // placeholder consequence for trying to overwrite an already-occupied index
+            std::cout << "index already filled!" << std::endl;
+        }
+        else {
+            array[writeIndex] = input;
+        }
         writeIndex++;
     }
 
@@ -20,7 +26,7 @@ struct RingBuffer {
             readIndex = 0;
         }
         const char output = array[readIndex];
-        array[readIndex] = 0;
+        array[readIndex] = '\0';
         readIndex++;
         return output;
     }
@@ -28,18 +34,23 @@ struct RingBuffer {
     bool isFull() {
 
     }
+
+    bool isEmpty() {
+
+    }
 } ring_buffer;
 
 void writeArray() {
-    for (int i = 0; i < 64; i++) {
-        std::cout << ring_buffer.array[i] << " ";
+    for (int i = 0; i < 65; i++) {
+        if (ring_buffer.array[i] == 0) std::cout << "0" << " ";
+        std::cout << ring_buffer.array[i];
     }
     std::cout << std::endl;
 }
 
 int main() {
     char input = 'a';
-    for (int i = 0; i < 64; i++) {
+    for (int i = 0; i < 65; i++) {
         ring_buffer.push(input);
         input++;
     }
