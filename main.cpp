@@ -1,69 +1,49 @@
 #include <iostream>
 
-struct RingBuffer {
-    char array[64];
+class RingBuffer {
+    static constexpr int arraySize = 64;
+    char buffer[arraySize];
     int writeIndex = 0;
     int readIndex = 0;
+    int counter = 0;
 
-    void push(const char input) {
-        if (writeIndex == 64) writeIndex = 0;
-        std::cout << writeIndex << std::endl;
-
-        // First checks if the index being written on is already occupied.
-        if (array[writeIndex] != 0) {
-            // placeholder consequence for trying to overwrite an already-occupied index
-            std::cout << "index already filled!" << std::endl;
+    public:
+        bool push(const char input) {
+            // First checks if the array is full
+            if (!isFull()) {
+                buffer[writeIndex] = input;
+                writeIndex = (writeIndex + 1) % arraySize;
+                counter++;
+                return true;
+            }
+            return false;
         }
-        else {
-            array[writeIndex] = input;
+
+
+        bool pop(char& value) {
+
+            if (isEmpty()) {
+                return false;
+            }
+
+            value = buffer[readIndex];
+
+            readIndex = (readIndex + 1) % arraySize;
+
+            counter--;
+            return true;
         }
-        writeIndex++;
-    }
 
-
-    char pop() {
-        if (readIndex == 64) {
-            readIndex = 0;
+        bool isFull() const {
+            return counter == arraySize;
         }
-        const char output = array[readIndex];
-        array[readIndex] = '\0';
-        readIndex++;
-        return output;
-    }
 
-    bool isFull() {
-
-    }
-
-    bool isEmpty() {
-
-    }
+        bool isEmpty() const {
+            return counter == 0;
+        }
 } ring_buffer;
 
-void writeArray() {
-    for (int i = 0; i < 65; i++) {
-        if (ring_buffer.array[i] == 0) std::cout << "0" << " ";
-        std::cout << ring_buffer.array[i];
-    }
-    std::cout << std::endl;
-}
-
 int main() {
-    char input = 'a';
-    for (int i = 0; i < 65; i++) {
-        ring_buffer.push(input);
-        input++;
-    }
-
-    std::cout << ring_buffer.writeIndex << std::endl;
-    writeArray();
-
-    for (int i = 0; i < 64; i++) {
-        std:: cout << ring_buffer.pop() << " ";
-        input++;
-    }
-    std:: cout << std::endl;
-    writeArray();
-
+    // TODO: properly test the wraparound mechanic of the write and read index of the ring buffer.
     return 0;
 }
