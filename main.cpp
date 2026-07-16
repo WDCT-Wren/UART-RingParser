@@ -8,6 +8,11 @@ class RingBuffer {
     int counter = 0;
 
     public:
+        /**
+         * Method that pushes a byte into the ring buffer
+         * @param input byte to be inputted in the buffer
+         * @return a boolean to confirm the success/failure of the push
+         */
         bool push(const char input) {
             // First checks if the array is full
             if (!isFull()) {
@@ -19,7 +24,13 @@ class RingBuffer {
             return false;
         }
 
-
+        /**
+         * method to pop or read the head in the ring buffer.
+         *
+         * @param the initial value passed by reference to be edited to reflect the current head of the index
+         * @return a boolean to confirm the success/failure of the method call as well as the reference of value being
+         * edited.
+         */
         bool pop(char& value) {
 
             if (isEmpty()) {
@@ -44,6 +55,6 @@ class RingBuffer {
 } ring_buffer;
 
 int main() {
-    // TODO: properly test the wraparound mechanic of the write and read index of the ring buffer.
+    
     return 0;
 }
