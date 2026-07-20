@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstring>
 
 class RingBuffer {
     static constexpr int arraySize = 64;
@@ -27,7 +28,7 @@ class RingBuffer {
         /**
          * method to pop or read the head in the ring buffer.
          *
-         * @param the initial value passed by reference to be edited to reflect the current head of the index
+         * @param value the initial value passed by reference to be edited to reflect the current head of the index
          * @return a boolean to confirm the success/failure of the method call as well as the reference of value being
          * edited.
          */
@@ -52,26 +53,66 @@ class RingBuffer {
         bool isEmpty() const {
             return counter == 0;
         }
-
-        void printBuffer() {
-            for (int i = 0; i < arraySize; i++) {
-                std::cout << buffer[i] << " ";
-            }
-            std::cout << std::endl;
-        }
 } ring_buffer;
 
 class CommandParser {
-    // TODO: Phase 2 - Command Parser
-    // 1. Fake byte source: hardcoded string "LED ON\nTEMP?\nLED OFF\n", push() into ring buffer one byte at a time (simulates UART)
-    // 2. Command accumulator: separate fixed char array, pop() bytes off ring buffer into it until '\n' hit = one complete command. No std::string/dynamic alloc. Needs own counter (like ring buffer's).
-    // 3. Reset accumulator after each complete command (array contents vs counter - same lesson as ring buffer)
+    static constexpr int cmdSize = 64;
+    char cmd[cmdSize];
+    int index = 0;
+    // 2. Command accumulator: separate fixed char array, pop() bytes off ring buffer into it until '\n' hit = one complete command.
+    // No std::string/dynamic alloc. Needs own counter (like ring buffer's).
+    public:
+        void accumulate(RingBuffer& ring_buffer) {
+            char value;
+
+            while (ring_buffer.pop(value)) {
+                if (index >= (cmdSize - 1)) {
+                    std::cout << "Command Overload! inputted command is larger than 64 bytes!" << std::endl;
+                    index = 0;
+                }
+                if (value == '\n') {
+                    cmd[index] = '\0';
+
+                    // Currently cout since dispatching and tokenizing is in phase 3.
+                    std::cout << "Command received: " << cmd << std::endl;
+
+                    // Reset accumulator after each complete command
+                    index = 0;
+                    continue;
+                    // TODO: fix the 3-command case bug
+                }
+                cmd[index++] = value;
+            }
+        }
+
     // 4. Compare accumulated command against known strings ("LED ON", "LED OFF", "TEMP?") - find the right C-string comparison tool (not ==)
-    // 5. cout the matched command (no state changes yet - that's phase 3)
+        void compare() {
+            const char* commands[] = {"LED ON", "LED OFF", "TEMP?"};
+
+            for (int i = 0; i < 3; i++) {
+                if (std::strcmp(cmd, commands[i]) == 0) {
+                    // cout the matched command (no state changes yet - that's phase 3)
+                    std::cout << "Command found!: " << commands[i] << std::endl;
+                    break;
+                }
+            }
+        }
+
+
+
     // Checkpoint: feed full 3-command string, confirm all 3 match correctly in order, no leftover bytes bleeding between commands
     // Decide: interleave push/pop in one loop, or two separate passes? (think: which matches real UART behavior)
 } command_parser;
 
 int main() {
+    char* command = "LED ON\nTEMP?\nLED OFF\n";
+
+    for (int i = 0;; i++) {
+        ring_buffer.push(command[i]);
+        if (command[i] == '\n') break;
+    }
+    command_parser.accumulate(ring_buffer);
+    command_parser.compare();
+
     return 0;
 }
