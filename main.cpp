@@ -62,7 +62,7 @@ class CommandParser {
     // 2. Command accumulator: separate fixed char array, pop() bytes off ring buffer into it until '\n' hit = one complete command.
     // No std::string/dynamic alloc. Needs own counter (like ring buffer's).
     public:
-        void accumulate(RingBuffer& ring_buffer) {
+        void process(RingBuffer& ring_buffer) {
             char value;
 
             while (ring_buffer.pop(value)) {
@@ -75,11 +75,11 @@ class CommandParser {
 
                     // Currently cout since dispatching and tokenizing is in phase 3.
                     std::cout << "Command received: " << cmd << std::endl;
+                    compare();
 
                     // Reset accumulator after each complete command
                     index = 0;
                     continue;
-                    // TODO: fix the 3-command case bug
                 }
                 cmd[index++] = value;
             }
@@ -97,22 +97,15 @@ class CommandParser {
                 }
             }
         }
-
-
-
-    // Checkpoint: feed full 3-command string, confirm all 3 match correctly in order, no leftover bytes bleeding between commands
-    // Decide: interleave push/pop in one loop, or two separate passes? (think: which matches real UART behavior)
 } command_parser;
 
 int main() {
     char* command = "LED ON\nTEMP?\nLED OFF\n";
 
-    for (int i = 0;; i++) {
+    for (int i = 0;i < strlen(command); i++) {
         ring_buffer.push(command[i]);
-        if (command[i] == '\n') break;
     }
-    command_parser.accumulate(ring_buffer);
-    command_parser.compare();
+    command_parser.process(ring_buffer);
 
     return 0;
 }
