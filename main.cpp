@@ -100,12 +100,15 @@ class CommandParser {
 } command_parser;
 
 int main() {
-    char* command = "LED ON\nTEMP?\nLED OFF\n";
+    char c;
 
-    for (int i = 0;i < strlen(command); i++) {
-        ring_buffer.push(command[i]);
+    while (std::cin.get(c)) {
+        // Initial command to finish the program.
+        if (c == 'q') break;
+
+        ring_buffer.push(c);
+        if (c == '\n') command_parser.process(ring_buffer);
     }
-    command_parser.process(ring_buffer);
 
     return 0;
 }
